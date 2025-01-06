@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import './strikeoutPercentage.css';
+import './kbbPercentage.css';
 
-export const StrikeoutPercentage = () => {
+export const KBBPercentage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ export const StrikeoutPercentage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/v1/pitcher-stats?sort_by=strikeout_pct&order=desc');
+        const response = await fetch('http://localhost:8000/api/v1/pitcher-stats?sort_by=k_minus_bb&order=desc');
         const result = await response.json();
         if (result.success) {
           setData(result.data);
@@ -60,7 +60,10 @@ export const StrikeoutPercentage = () => {
 
     const y = d3.scaleLinear()
       .range([height, 0])
-      .domain([0, Math.max(100, d3.max(displayData, d => d.strikeout_pct))]);
+      .domain([
+        Math.min(0, d3.min(displayData, d => d.k_minus_bb)),  // Include negative values
+        Math.max(50, d3.max(displayData, d => d.k_minus_bb))
+      ]);
 
     // Add X axis
     svg.append('g')
@@ -77,16 +80,33 @@ export const StrikeoutPercentage = () => {
     svg.append('g')
       .call(d3.axisLeft(y).ticks(10).tickFormat(d => `${d}%`));
 
+    // Add a zero line
+    svg.append('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', y(0))
+      .attr('y2', y(0))
+      .attr('stroke', '#666')
+      .attr('stroke-dasharray', '4')
+      .attr('stroke-width', 1);
+
     // Add bars
     svg.selectAll('rect')
       .data(displayData)
       .enter()
       .append('rect')
       .attr('x', d => x(d.name))
-      .attr('y', d => y(d.strikeout_pct))
+      .attr('y', d => d.k_minus_bb >= 0 ? y(d.k_minus_bb) : y(0))
       .attr('width', x.bandwidth())
-      .attr('height', d => height - y(d.strikeout_pct))
-      .attr('fill', d => d.type === 'S' || d.type === 'Starter' ? '#2196F3' : '#4CAF50')
+      .attr('height', d => Math.abs(y(d.k_minus_bb) - y(0)))
+      .attr('fill', d => {
+        // Color based on value and pitcher type
+        if (d.type === 'S') {
+          return d.k_minus_bb >= 0 ? '#4CAF50' : '#f44336';  // Green for positive, Red for negative
+        } else {
+          return d.k_minus_bb >= 0 ? '#81C784' : '#E57373';  // Lighter shades for relievers
+        }
+      })
       .on('mouseover', function(event, d) {
         d3.select(this).attr('opacity', 0.8);
         
@@ -94,9 +114,9 @@ export const StrikeoutPercentage = () => {
         svg.append('text')
           .attr('class', 'tooltip')
           .attr('x', x(d.name) + x.bandwidth() / 2)
-          .attr('y', y(d.strikeout_pct) - 5)
+          .attr('y', y(Math.max(0, d.k_minus_bb)) - 5)
           .attr('text-anchor', 'middle')
-          .text(`${d.strikeout_pct}% (${d.type === 'S' ? 'Starter' : 'Reliever'})`);
+          .text(`${d.k_minus_bb}% (${d.type === 'S' ? 'Starter' : 'Reliever'})`);
       })
       .on('mouseout', function() {
         d3.select(this).attr('opacity', 1);
@@ -110,7 +130,7 @@ export const StrikeoutPercentage = () => {
       .attr('x', 0 - (height / 2))
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
-      .text('Strikeout Percentage');
+      .text('K-BB%');
 
   }, [data, displayCount]);
 
@@ -118,8 +138,8 @@ export const StrikeoutPercentage = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="strikeout-percentage">
-      <h2>Pitcher Strikeout Percentages</h2>
+    <div className="kbb-percentage">
+      <h2>K-BB%</h2>
       <div className="controls">
         <label>
           Show top:

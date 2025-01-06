@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import './strikeoutPercentage.css';
+import './kbbRatio.css';
 
-export const StrikeoutPercentage = () => {
+export const KbbRatio = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ export const StrikeoutPercentage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/v1/pitcher-stats?sort_by=strikeout_pct&order=desc');
+        const response = await fetch('http://localhost:8000/api/v1/pitcher-stats?sort_by=k_bb_ratio&order=desc');
         const result = await response.json();
         if (result.success) {
           setData(result.data);
@@ -34,83 +34,70 @@ export const StrikeoutPercentage = () => {
   useEffect(() => {
     if (!data.length || !svgRef.current) return;
 
-    // Clear any existing SVG content
     d3.select(svgRef.current).selectAll('*').remove();
 
-    // Get top N pitchers
     const displayData = data.slice(0, displayCount);
 
-    // Set up dimensions
     const margin = { top: 20, right: 30, bottom: 100, left: 60 };
     const width = 1000 - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
 
-    // Create SVG container
     const svg = d3.select(svgRef.current)
       .attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Create scales
     const x = d3.scaleBand()
       .range([0, width])
       .domain(displayData.map(d => d.name))
-      .padding(0.2);
+      .padding(0.1);
 
     const y = d3.scaleLinear()
-      .range([height, 0])
-      .domain([0, Math.max(100, d3.max(displayData, d => d.strikeout_pct))]);
+      .domain([0, d3.max(displayData, d => d.k_bb_ratio) * 1.1])
+      .range([height, 0]);
 
-    // Add X axis
     svg.append('g')
       .attr('transform', `translate(0,${height})`)
       .call(d3.axisBottom(x))
       .selectAll('text')
       .attr('transform', 'rotate(-45)')
-      .style('text-anchor', 'end')
-      .attr('dx', '-0.8em')
-      .attr('dy', '0.15em')
-      .style('font-size', '12px');
+      .style('text-anchor', 'end');
 
-    // Add Y axis
     svg.append('g')
-      .call(d3.axisLeft(y).ticks(10).tickFormat(d => `${d}%`));
+      .call(d3.axisLeft(y));
 
-    // Add bars
-    svg.selectAll('rect')
+    svg.selectAll('bars')
       .data(displayData)
       .enter()
       .append('rect')
       .attr('x', d => x(d.name))
-      .attr('y', d => y(d.strikeout_pct))
+      .attr('y', d => y(d.k_bb_ratio))
       .attr('width', x.bandwidth())
-      .attr('height', d => height - y(d.strikeout_pct))
-      .attr('fill', d => d.type === 'S' || d.type === 'Starter' ? '#2196F3' : '#4CAF50')
+      .attr('height', d => height - y(d.k_bb_ratio))
+      .attr('fill', d => d.type === 'S' ? '#2F241D' : '#A2AAB0')
       .on('mouseover', function(event, d) {
         d3.select(this).attr('opacity', 0.8);
         
-        // Add tooltip
         svg.append('text')
           .attr('class', 'tooltip')
           .attr('x', x(d.name) + x.bandwidth() / 2)
-          .attr('y', y(d.strikeout_pct) - 5)
+          .attr('y', y(d.k_bb_ratio) - 5)
           .attr('text-anchor', 'middle')
-          .text(`${d.strikeout_pct}% (${d.type === 'S' ? 'Starter' : 'Reliever'})`);
+          .text(`${d.k_bb_ratio} (${d.type === 'S' ? 'Starter' : 'Reliever'})`);
       })
       .on('mouseout', function() {
         d3.select(this).attr('opacity', 1);
         svg.selectAll('.tooltip').remove();
       });
 
-    // Add labels
     svg.append('text')
       .attr('transform', 'rotate(-90)')
       .attr('y', 0 - margin.left)
       .attr('x', 0 - (height / 2))
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
-      .text('Strikeout Percentage');
+      .text('K/BB Ratio');
 
   }, [data, displayCount]);
 
@@ -118,8 +105,8 @@ export const StrikeoutPercentage = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="strikeout-percentage">
-      <h2>Pitcher Strikeout Percentages</h2>
+    <div className="kbb-ratio">
+      <h2>K/BB Ratio</h2>
       <div className="controls">
         <label>
           Show top:

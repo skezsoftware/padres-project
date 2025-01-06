@@ -1,22 +1,22 @@
-.walk-percentage {
+.kbb-percentage {
     padding: 20px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
   
-  .walk-percentage h2 {
+  .kbb-percentage h2 {
     text-align: center;
     color: #333;
     margin-bottom: 20px;
   }
   
-  .walk-percentage svg {
+  .kbb-percentage svg {
     display: block;
     margin: 0 auto;
   }
   
-  .walk-percentage rect:hover {
+  .kbb-percentage rect:hover {
     cursor: pointer;
   }
   

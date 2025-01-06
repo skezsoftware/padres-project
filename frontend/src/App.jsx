@@ -1,13 +1,16 @@
-import React from "react";
-import Home from "./components/home/Home";
-import Header from "./components/header/Header";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { TeamGrid } from './components/home/TeamGrid';
+import { Home } from './components/home/Home';
 
 function App() {
   return (
-    <>
-    <Header />
-    <Home />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<TeamGrid />} />
+        <Route path="/team/:teamId" element={<Home />} />
+      </Routes>
+    </Router>
   );
 }
 
