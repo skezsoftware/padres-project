@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query
 from typing import Optional
 from ..database import db
-from ..models import PitcherStats, PitcherStatsResponse
+from ..models import PitcherStats, PitcherStatsResponse, PitchData, PitchLocation
 
 router = APIRouter()
 
@@ -121,6 +121,23 @@ async def get_pitcher_stats(
             if max_batters and total_batters > max_batters:
                 continue
             
+            # Calculate pitch type data
+            pitch_data = []
+            for pitch_type, pitch_group in pitcher_data.groupby('pitch_type'):
+                pitch_count = len(pitch_group)
+                usage_pct = (pitch_count / len(pitcher_data)) * 100
+                
+                pitch_data.append(PitchData(
+                    pitch_type=pitch_type,
+                    usage_pct=round(usage_pct, 1),
+                    avg_velocity=round(pitch_group['rel_speed'].mean(), 1),
+                    avg_spin_rate=round(pitch_group['spin_rate'].mean(), 0),
+                    locations=[
+                        PitchLocation(plate_x=row['plate_x'], plate_z=row['plate_z'])
+                        for _, row in pitch_group.iterrows()
+                    ]
+                ))
+            
             stats.append(PitcherStats(
                 name=f"{first_name} {last_name}",
                 team=team_name,
@@ -132,7 +149,8 @@ async def get_pitcher_stats(
                 total_pitches=len(pitcher_data),
                 total_batters=total_batters,
                 fip=round(fip, 2) if fip is not None else None,
-                innings_pitched=round(innings_pitched, 1)
+                innings_pitched=round(innings_pitched, 1),
+                pitch_data=pitch_data
             ))
         
         # Sort the results

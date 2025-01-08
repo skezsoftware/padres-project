@@ -1,0 +1,76 @@
+.navbar {
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-link {
+  font-size: 1.1rem;
+  margin: 0 1rem;
+  position: relative;
+}
+
+.nav-link:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+}
+
+.navbar-toggler {
+  border-color: rgba(255,255,255,0.5);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.nav-link.active {
+  font-weight: bold;
+  border-bottom: 2px solid white;
+}
+
+.nav-link.active:hover::after {
+  display: none;
+}
+
+.team-selector {
+  margin-left: 20px;
+}
+
+.team-selector select {
+  min-width: 200px;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.team-selector select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  outline: none;
+}
+
+.team-selector select option {
+  background-color: #fff;
+  color: #333;
+}
+
+.dropdown-menu {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}

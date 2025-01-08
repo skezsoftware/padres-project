@@ -22,7 +22,7 @@ app.include_router(teams.router, prefix="/api/v1")
 async def root():
     return {"message": "Welcome to the Padres Pitching Stats API"}
 
-# Keep your existing data endpoints if needed
+# Keep if needed
 @app.get("/data")
 async def get_data():
     try:

@@ -1,0 +1,186 @@
+.dashboard-container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.main-content {
+  display: flex;
+  gap: 20px;
+}
+
+.content-area {
+  flex: 1;
+}
+
+.filters-section {
+  width: 280px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  color: #000;
+}
+
+.filter-group {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.filter-group:last-child {
+  border-bottom: none;
+}
+
+.filter-group h4 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  color: #000;
+}
+
+.filter-group input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.button-group button {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: white;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button-group button.active {
+  background-color: var(--team-color);
+  color: white;
+  border-color: var(--team-color);
+}
+
+.clear-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;
+  background-color: var(--team-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-button:hover {
+  opacity: 0.9;
+}
+
+.chart-selection {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-tab {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  background-color: white;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chart-tab:hover {
+  border-color: var(--team-color);
+  color: var(--team-color);
+}
+
+.chart-tab.active {
+  background-color: var(--team-color);
+  color: white;
+  border-color: var(--team-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.chart-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  min-height: 600px;
+}
+
+.team-header {
+  background-color: var(--team-color);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.team-header h1 {
+  color: white;
+  margin: 0;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .filters-section {
+    width: 100%;
+    order: -1;
+  }
+
+  .button-group {
+    flex-direction: row;
+  }
+}
+
+/* Add these styles to your existing CSS */
+.react-datepicker-wrapper {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.react-datepicker__input-container input:focus {
+  border-color: var(--team-color);
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}

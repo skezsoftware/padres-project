@@ -8,13 +8,31 @@ export const TeamGrid = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const teamAbbreviations = {
+    'Arizona Diamondbacks': 'ARI',
+    'Atlanta Braves': 'ATL',
+    'Baltimore Orioles': 'BAL',
+    'Cleveland Guardians': 'CLE',
+    'Los Angeles Dodgers': 'LAD',
+    'San Diego Padres': 'SD',
+    'Seattle Mariners': 'SEA',
+    'Texas Rangers': 'TEX',
+    'Washington Nationals': 'WSH'
+  };
+
   useEffect(() => {
     const fetchTeams = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/v1/teams');
         const result = await response.json();
         if (result.success) {
-          setTeams(result.data);
+          // Sort the teams to ensure Padres are in the middle
+          const sortedTeams = result.data.sort((a, b) => {
+            if (a === 'San Diego Padres') return 1;  // Move Padres towards the end
+            if (b === 'San Diego Padres') return -1; // Move Padres towards the end
+            return a.localeCompare(b);
+          });
+          setTeams(sortedTeams);
         } else {
           setError(result.error);
         }
@@ -37,12 +55,11 @@ export const TeamGrid = () => {
 
   return (
     <div className="team-grid">
-      <h1>MLB Teams</h1>
       <div className="grid-container">
         {teams.map((team) => (
           <div 
             key={team} 
-            className={`team-card ${team === 'SDP' ? 'padres' : ''}`}
+            className={`team-card ${teamAbbreviations[team]}`}
             onClick={() => handleTeamClick(team)}
           >
             {team}

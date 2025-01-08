@@ -1,0 +1,114 @@
+/* TEAM GRID */
+.team-grid {
+    padding: 15px;
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+  }
+  
+  .intro-text {
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 20px 20px;
+  }
+  
+  .intro-text h1 {
+    font-size: 2.4rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  
+  .intro-text p {
+    font-size: 1.2rem;
+    color: #34495e;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 30px;
+    padding: 25px;
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    place-items: center;
+  }
+  
+  .team-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Team-specific colors */
+  .team-card.ARI { background-color: rgb(156,41,59); }
+  .team-card.ATL { background-color: rgb(27,57,99); }
+  .team-card.BAL { background-color: rgb(233,124,77); }
+  .team-card.CLE { background-color: rgb(33,53,77); }
+  .team-card.LAD { background-color: rgb(49,105,163); }
+  .team-card.SD {
+    background-color: rgb(63,54,48);
+    grid-column: 2;
+    grid-row: 2;
+    width: 110%;
+    height: 180px;
+    font-size: 1.8rem;
+    transform: scale(1.08);
+    z-index: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 20px rgb(206, 184, 136),
+                0 0 40px rgba(206, 184, 136, 0.4);
+  }
+  .team-card.SEA { background-color: rgb(50,107,108); }
+  .team-card.TEX { background-color: rgb(31,64,131); }
+  .team-card.WSH { background-color: rgb(172,50,38); }
+  
+  .team-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+  }
+  
+  .team-card.SD:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 25px rgb(206, 184, 136),
+                0 0 50px rgba(206, 184, 136, 0.5);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .grid-container {
+      gap: 15px;
+      padding: 10px;
+    }
+
+    .team-card {
+      height: 120px;
+      font-size: 1.1rem;
+    }
+
+    .team-card.SD {
+      height: 160px;
+      font-size: 1.4rem;
+    }
+  }
