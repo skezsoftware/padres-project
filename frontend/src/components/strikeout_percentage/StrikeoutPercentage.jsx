@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import './firstPitchStrikes.css';
+import './strikeoutPercentage.css';
 
-export const FirstPitchStrikes = ({ teamId, filters }) => {
+export const StrikeoutPercentage = ({ teamId, filters }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +14,7 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
       try {
         const queryParams = new URLSearchParams({
           team: teamId,
-          sort_by: 'first_pitch_strike_pct',
+          sort_by: 'strikeout_pct',
           order: 'desc',
           ...(filters?.startDate && { start_date: filters.startDate }),
           ...(filters?.endDate && { end_date: filters.endDate }),
@@ -46,9 +46,10 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
   useEffect(() => {
     if (!data.length || !svgRef.current) return;
 
+    // Clear previous content
     d3.select(svgRef.current).selectAll('*').remove();
 
-    const margin = { top: 40, right: 30, bottom: 160, left: 60 };
+    const margin = { top: 40, right: 30, bottom: 140, left: 60 };
     const width = 1000 - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
 
@@ -58,11 +59,6 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Create color scale
-    const colorScale = d3.scaleLinear()
-      .domain([d3.min(data, d => d.first_pitch_strike_pct), d3.max(data, d => d.first_pitch_strike_pct)])
-      .range(['#cfe2f3', '#0b5394']); // Light blue to dark blue
-
     // Create scales
     const x = d3.scaleBand()
       .range([0, width])
@@ -71,9 +67,9 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
 
     const y = d3.scaleLinear()
       .range([height, 0])
-      .domain([0, Math.max(100, d3.max(data, d => d.first_pitch_strike_pct))]);
+      .domain([0, Math.min(100, Math.ceil(d3.max(data, d => d.strikeout_pct) * 1.1))]);
 
-    // Add X axis with larger font and more space
+    // Add X axis with clearer names
     svg.append('g')
       .attr('transform', `translate(0,${height})`)
       .call(d3.axisBottom(x))
@@ -81,7 +77,7 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
       .attr('transform', 'rotate(-45)')
       .style('text-anchor', 'end')
       .attr('dx', '-.8em')
-      .attr('dy', '.15em')
+      .attr('dy', '-.2em')
       .style('font-size', '18px')
       .style('font-weight', '500')
       .style('font-family', 'Arial');
@@ -96,8 +92,13 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
       .style('font-weight', '500')
       .style('font-family', 'Arial');
 
+    // Create color gradient
+    const colorScale = d3.scaleLinear()
+      .domain([d3.min(data, d => d.strikeout_pct), d3.max(data, d => d.strikeout_pct)])
+      .range(['#cfe2f3', '#0b5394']);
+
     // Add background colors for above/below MLB average (after scales, before bars)
-    const mlbAverage = 62.4;
+    const mlbAverage = 22.6;
     
     // Add background rectangle for below average (light red)
     svg.append('rect')
@@ -124,56 +125,51 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
       .append('rect')
       .attr('class', 'bar')
       .attr('x', d => x(d.name))
-      .attr('y', d => y(d.first_pitch_strike_pct))
+      .attr('y', d => y(d.strikeout_pct))
       .attr('width', x.bandwidth())
-      .attr('height', d => height - y(d.first_pitch_strike_pct))
-      .style('fill', d => colorScale(d.first_pitch_strike_pct))
+      .attr('height', d => height - y(d.strikeout_pct))
+      .style('fill', d => colorScale(d.strikeout_pct))
       .style('cursor', 'pointer')
       .on('mouseover', function(event, d) {
         d3.select(this)
           .attr('opacity', 0.8);
         
         // Calculate position to ensure visibility
-        const boxHeight = 70;
-        const boxWidth = 200;
-        const xPosition = x(d.name) + x.bandwidth() / 2;
+        const boxHeight = 60;
+        const boxWidth = 180;  // Increased width
+        const yPosition = Math.max(y(d.strikeout_pct) - 70, 10);  // Ensure minimum distance from top
         
-        // Adjust xPosition if too close to right edge
-        const adjustedXPosition = xPosition + boxWidth/2 > width ? 
-          xPosition - boxWidth - 20 : // Move box to left side of bar
-          xPosition - boxWidth/2;     // Center on bar
-        
-        // Add background rectangle
+        // Add background rectangle for text
         svg.append('rect')
           .attr('class', 'text-background')
-          .attr('x', adjustedXPosition)
-          .attr('y', y(d.first_pitch_strike_pct) - 70)
+          .attr('x', x(d.name) + x.bandwidth() / 2 - boxWidth / 2)
+          .attr('y', yPosition)
           .attr('width', boxWidth)
           .attr('height', boxHeight)
           .attr('fill', 'white')
-          .attr('opacity', 0.95)
+          .attr('opacity', 0.95)  // Slightly more opaque
           .attr('rx', 5)
           .style('filter', 'drop-shadow(0px 2px 3px rgba(0,0,0,0.2))');
 
-        // Add highlighted name
+        // Add highlighted name on top of background
         svg.append('text')
           .attr('class', 'highlight-name')
-          .attr('x', adjustedXPosition + boxWidth/2)
-          .attr('y', y(d.first_pitch_strike_pct) - 45)
+          .attr('x', x(d.name) + x.bandwidth() / 2)
+          .attr('y', yPosition + 25)  // Adjusted positioning
           .attr('text-anchor', 'middle')
-          .style('font-size', '20px')
+          .style('font-size', '18px')
           .style('font-weight', 'bold')
           .text(d.name);
 
         // Add percentage and type
         svg.append('text')
           .attr('class', 'value-label')
-          .attr('x', adjustedXPosition + boxWidth/2)
-          .attr('y', y(d.first_pitch_strike_pct) - 20)
+          .attr('x', x(d.name) + x.bandwidth() / 2)
+          .attr('y', yPosition + 45)  // Adjusted positioning
           .attr('text-anchor', 'middle')
-          .style('font-size', '18px')
+          .style('font-size', '16px')
           .style('font-weight', 'bold')
-          .text(`${d.first_pitch_strike_pct.toFixed(1)}% (${d.type})`);
+          .text(`${d.strikeout_pct.toFixed(1)}% (${d.type})`);
       })
       .on('mouseout', function() {
         d3.select(this)
@@ -193,24 +189,23 @@ export const FirstPitchStrikes = ({ teamId, filters }) => {
       .style('stroke-width', 3)
       .style('stroke-dasharray', '10,10');
 
-    // Add MLB average label
+    // Add MLB average label with larger font
     svg.append('text')
       .attr('x', width)
       .attr('y', y(mlbAverage) - 5)
       .attr('text-anchor', 'end')
-      .style('font-size', '16px')
+      .style('font-size', '16px')  // Increased from 14px to 16px
       .style('font-weight', '500')
       .style('font-family', 'Arial')
-      .text('MLB Average (62.4%)');
-
+      .text('MLB Average (22.6%)');
   }, [data]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="first-pitch-strikes">
-      <h2>First Pitch Strike Percentage (F-Strike%)</h2>
+    <div className="strikeout-percentage">
+      <h2>Strikeout Percentage (K%)</h2>
       <svg ref={svgRef}></svg>
     </div>
   );

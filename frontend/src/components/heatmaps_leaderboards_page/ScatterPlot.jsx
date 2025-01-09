@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 
-export const ScatterPlot = ({ data, pitchType, usage, avgVelo, avgSpin }) => {
+export const ScatterPlot = ({ data, pitchType, usage, avgVelo, avgSpin, isHighest, color }) => {
   console.log("ScatterPlot props:", { data, pitchType, usage, avgVelo, avgSpin });
 
   const svgRef = useRef()
-  const width = 300
-  const height = 300
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 }
+  const width = 250
+  const height = 320
+  const margin = { top: 15, right: 15, bottom: 50, left: 30 }
 
   useEffect(() => {
     if (!data) return
@@ -25,7 +25,7 @@ export const ScatterPlot = ({ data, pitchType, usage, avgVelo, avgSpin }) => {
       .range([margin.left, width - margin.right])
 
     const yScale = d3.scaleLinear()
-      .domain([0, 5])
+      .domain([-1.5, 5])
       .range([height - margin.bottom, margin.top])
 
     // Create a density heatmap
@@ -47,12 +47,29 @@ export const ScatterPlot = ({ data, pitchType, usage, avgVelo, avgSpin }) => {
 
     // Draw strike zone
     svg.append('rect')
-      .attr('x', xScale(0.83))
+      .attr('x', xScale(0.851))
       .attr('y', yScale(3.5))
-      .attr('width', xScale(-0.83) - xScale(0.83))
+      .attr('width', xScale(-0.851) - xScale(0.851))
       .attr('height', yScale(1.5) - yScale(3.5))
       .attr('stroke', 'black')
       .attr('fill', 'none');
+
+    // Add home plate with correct MLB dimensions, centered 1.5 units below strike zone
+    const homeplatePath = d3.path();
+    // For reference: strike zone bottom is at y=1.5
+    // So home plate should be centered at y=0
+    homeplatePath.moveTo(xScale(0), yScale(-0.4));        // Bottom point
+    homeplatePath.lineTo(xScale(0.708), yScale(0));       // Right diagonal
+    homeplatePath.lineTo(xScale(0.708), yScale(0.4));     // Right vertical
+    homeplatePath.lineTo(xScale(-0.708), yScale(0.4));    // Top horizontal
+    homeplatePath.lineTo(xScale(-0.708), yScale(0));      // Left vertical
+    homeplatePath.closePath();  // Back to bottom point
+
+    svg.append('path')
+      .attr('d', homeplatePath)
+      .attr('stroke', 'black')
+      .attr('fill', '#e0e0e0')
+      .attr('opacity', 0.5);
 
     // Add scatter points
     svg.selectAll('circle')
@@ -67,10 +84,11 @@ export const ScatterPlot = ({ data, pitchType, usage, avgVelo, avgSpin }) => {
   }, [data, pitchType, usage, avgVelo, avgSpin])
 
   return (
-    <div className="scatter-plot-container">
+    <div className={`scatter-plot-container ${isHighest ? 'highest' : ''}`}>
       <div className="pitch-info">
-        <h3 className="pitch-type">{pitchType} ({usage}%)</h3>
-        <p className="pitch-stats">{avgVelo} mph | {avgSpin} rpm</p>
+        <h3 className="pitch-type" style={{ color: color }}>{pitchType} ({usage}%)</h3>
+        <p className="pitch-stats">Average Velocity: {avgVelo} mph</p>
+        <p className="pitch-stats">Average Spin Rate: {avgSpin} rpm</p>
       </div>
       <svg ref={svgRef}></svg>
     </div>

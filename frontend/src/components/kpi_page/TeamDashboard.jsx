@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { StrikeoutPercentage } from "../pitcher_strikeouts/StrikeoutPercentage";
-import { FirstPitchStrikes } from "../pitcher_fps/FirstPitchStrikes";
-import { WalkPercentage } from "../pitcher_walks/WalkPercentage";
-import { FieldingIndependentPitching } from "../fip/FieldingIndependentPitching";
+import { StrikeoutPercentage } from "../strikeout_percentage/StrikeoutPercentage";
+import { FirstPitchStrikes } from "../first_pitch_strikes/FirstPitchStrikes";
+import { WalkPercentage } from "../walk_percentage/WalkPercentage";
+import { FieldingIndependentPitching } from "../fielding_independent_pitching/FieldingIndependentPitching";
 import { KBBRatio } from "../kbb_ratio/KBBRatio";
 import { getTeamColor } from "../../utils/teamColors";
 import "./TeamDashboard.css";
@@ -215,6 +215,7 @@ export const TeamDashboard = () => {
             <input
               type="number"
               name="minPitches"
+              min="0"
               value={filters.minPitches}
               onChange={handleFilterChange}
               placeholder="Min Pitches"
@@ -222,6 +223,7 @@ export const TeamDashboard = () => {
             <input
               type="number"
               name="maxPitches"
+              min="0"
               value={filters.maxPitches}
               onChange={handleFilterChange}
               placeholder="Max Pitches"
@@ -233,6 +235,7 @@ export const TeamDashboard = () => {
             <input
               type="number"
               name="minBatters"
+              min="0"
               value={filters.minBatters}
               onChange={handleFilterChange}
               placeholder="Min Batters"
@@ -240,6 +243,7 @@ export const TeamDashboard = () => {
             <input
               type="number"
               name="maxBatters"
+              min="0"
               value={filters.maxBatters}
               onChange={handleFilterChange}
               placeholder="Max Batters"

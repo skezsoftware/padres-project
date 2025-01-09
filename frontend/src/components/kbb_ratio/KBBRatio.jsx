@@ -48,7 +48,7 @@ export const KBBRatio = ({ teamId, filters }) => {
 
     d3.select(svgRef.current).selectAll('*').remove();
 
-    const margin = { top: 40, right: 30, bottom: 190, left: 70 };
+    const margin = { top: 40, right: 30, bottom: 160, left: 60 };
     const width = 1000 - margin.left - margin.right;
     const height = 600 - margin.top - margin.bottom;
 
@@ -71,7 +71,7 @@ export const KBBRatio = ({ teamId, filters }) => {
 
     const y = d3.scaleLinear()
       .range([height, 0])
-      .domain([0, d3.max(data, d => d.k_bb_ratio)]);
+      .domain([0, Math.max(2.76 * 1.1, d3.max(data, d => d.k_bb_ratio))]);
 
     // First create the background colors (should be first, behind everything)
     const mlbAverage = 2.76;

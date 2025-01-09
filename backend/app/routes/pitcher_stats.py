@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Query
-from typing import Optional
+from typing import Optional, Dict, List
 from ..database import db
 from ..models import PitcherStats, PitcherStatsResponse, PitchData, PitchLocation
+import pandas as pd
+from statistics import mean
 
 router = APIRouter()
+
 
 @router.get("/pitcher-stats", response_model=PitcherStatsResponse)
 async def get_pitcher_stats(
@@ -96,8 +99,13 @@ async def get_pitcher_stats(
                 fip = ((13 * home_runs) + (3 * (walks + hit_by_pitch)) - (2 * strikeouts)) / innings_pitched + 3.17
             else:
                 fip = None
+
+            # Calculate hard hit %
+            batted_balls = pitcher_data[pitcher_data['hit_exit_speed'].notna()]
+            hard_hits = batted_balls[batted_balls['hit_exit_speed'] >= 95.0]
+            hard_hit_pct = (len(hard_hits) / len(batted_balls)) * 100 if len(batted_balls) > 0 else 0
             
-            # Apply performance threshold filters
+            # Performance threshold filters
             if min_strikeout_pct and strikeout_pct < min_strikeout_pct:
                 continue
             if max_strikeout_pct and strikeout_pct > max_strikeout_pct:
@@ -122,21 +130,33 @@ async def get_pitcher_stats(
                 continue
             
             # Calculate pitch type data
+            pitcher_data = pitcher_data[pitcher_data['pitch_type'].notna()]
             pitch_data = []
             for pitch_type, pitch_group in pitcher_data.groupby('pitch_type'):
                 pitch_count = len(pitch_group)
                 usage_pct = (pitch_count / len(pitcher_data)) * 100
                 
+                # Calculate whiff percentage
+                whiff_count = len(pitch_group[pitch_group['swinging_strike'] == True])
+                whiff_pct = (whiff_count / pitch_count) * 100 if pitch_count > 0 else 0
+                
                 pitch_data.append(PitchData(
                     pitch_type=pitch_type,
                     usage_pct=round(usage_pct, 1),
+                    whiff_pct=round(whiff_pct, 1),  # Add whiff percentage
                     avg_velocity=round(pitch_group['rel_speed'].mean(), 1),
                     avg_spin_rate=round(pitch_group['spin_rate'].mean(), 0),
                     locations=[
-                        PitchLocation(plate_x=row['plate_x'], plate_z=row['plate_z'])
+                        PitchLocation(
+                            plate_x=row['plate_x'], 
+                            plate_z=row['plate_z'],
+                            swinging_strike=bool(row['swinging_strike'])
+                        )
                         for _, row in pitch_group.iterrows()
                     ]
                 ))
+            
+            avg_hit_speed = pitcher_data['hit_exit_speed'].mean()
             
             stats.append(PitcherStats(
                 name=f"{first_name} {last_name}",
@@ -150,7 +170,9 @@ async def get_pitcher_stats(
                 total_batters=total_batters,
                 fip=round(fip, 2) if fip is not None else None,
                 innings_pitched=round(innings_pitched, 1),
-                pitch_data=pitch_data
+                hard_hit_pct=round(hard_hit_pct, 1),
+                pitch_data=pitch_data,
+                avg_hit_speed=round(avg_hit_speed, 1) if not pd.isna(avg_hit_speed) else None
             ))
         
         # Sort the results
@@ -180,10 +202,10 @@ async def get_pitcher_stats(
         for stat in stats[:5]:
             print(f"Name: {stat.name}, K/BB: {stat.k_bb_ratio}")
         
+        
         return PitcherStatsResponse(
             success=True,
             data=stats,
-            error=None
         )
         
     except Exception as e:

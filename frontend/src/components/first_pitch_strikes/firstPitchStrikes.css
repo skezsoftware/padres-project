@@ -15,23 +15,3 @@
     display: block;
     margin: 0 auto;
   }
-  
-  .first-pitch-strikes rect:hover {
-    cursor: pointer;
-  }
-  
-  .tooltip {
-    font-size: 12px;
-    font-weight: bold;
-  }
-  
-  .controls {
-    margin-bottom: 20px;
-    text-align: right;
-  }
-  
-  .controls select {
-    margin-left: 10px;
-    padding: 5px;
-    border-radius: 4px;
-  }
