@@ -69,9 +69,9 @@ export const TeamDashboard = () => {
   };
 
   const handleDateChange = (date, field) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [field]: date ? date.toISOString().split('T')[0] : ""
+      [field]: date ? date.toISOString().split("T")[0] : "",
     }));
   };
 
@@ -153,13 +153,17 @@ export const TeamDashboard = () => {
           <div className="filter-group">
             <h4>Date Range</h4>
             <DatePicker
-              selected={filters.startDate ? new Date(filters.startDate + 'T00:00:00') : null}
-              onChange={(date) => handleDateChange(date, 'startDate')}
+              selected={
+                filters.startDate
+                  ? new Date(filters.startDate + "T00:00:00")
+                  : null
+              }
+              onChange={(date) => handleDateChange(date, "startDate")}
               dateFormat="MM/dd/yyyy"
               placeholderText="Start Date"
               className="form-control"
-              minDate={new Date('2024-07-01T00:00:00')}
-              maxDate={new Date('2024-07-31T23:59:59')}
+              minDate={new Date("2024-07-01T00:00:00")}
+              maxDate={new Date("2024-07-31T23:59:59")}
               showMonthYearPicker={false}
               showMonthDropdown={false}
               showYearDropdown={false}
@@ -167,7 +171,7 @@ export const TeamDashboard = () => {
               fixedHeight
               peekNextMonth={false}
               shouldCloseOnSelect
-              defaultValue={new Date('2024-07-01T00:00:00')}
+              defaultValue={new Date("2024-07-01T00:00:00")}
               calendarStartYear={2024}
               calendarEndYear={2024}
               showPreviousMonths={false}
@@ -181,13 +185,15 @@ export const TeamDashboard = () => {
               )}
             />
             <DatePicker
-              selected={filters.endDate ? new Date(filters.endDate + 'T00:00:00') : null}
-              onChange={(date) => handleDateChange(date, 'endDate')}
+              selected={
+                filters.endDate ? new Date(filters.endDate + "T00:00:00") : null
+              }
+              onChange={(date) => handleDateChange(date, "endDate")}
               dateFormat="MM/dd/yyyy"
               placeholderText="End Date"
               className="form-control"
-              minDate={new Date('2024-07-01T00:00:00')}
-              maxDate={new Date('2024-07-31T23:59:59')}
+              minDate={new Date("2024-07-01T00:00:00")}
+              maxDate={new Date("2024-07-31T23:59:59")}
               showMonthYearPicker={false}
               showMonthDropdown={false}
               showYearDropdown={false}
@@ -195,7 +201,7 @@ export const TeamDashboard = () => {
               fixedHeight
               peekNextMonth={false}
               shouldCloseOnSelect
-              defaultValue={new Date('2024-07-01T00:00:00')}
+              defaultValue={new Date("2024-07-01T00:00:00")}
               calendarStartYear={2024}
               calendarEndYear={2024}
               showPreviousMonths={false}

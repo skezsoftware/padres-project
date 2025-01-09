@@ -1,8 +1,8 @@
-import React from 'react';
-import { getTeamColor } from '../../utils/teamColors';
+import React from "react";
+import { getTeamColor } from "../../utils/teamColors";
 
 const getPlaceIcon = (index) => {
-  switch(index) {
+  switch (index) {
     case 0:
       return <span className="medal-icon">🥇</span>;
     case 1:
@@ -15,25 +15,22 @@ const getPlaceIcon = (index) => {
 };
 
 export const LeaderboardSection = ({ pitcherStats }) => {
-  const teamId = localStorage.getItem('lastTeamId');
+  const teamId = localStorage.getItem("lastTeamId");
   const teamColor = getTeamColor(teamId);
 
   // Helper function to get pitch name
   const getPitchName = (code) => {
     const pitchTypes = {
-      // 'FF': 'Four-Seam',
-      '4S': 'Four-Seam',
-      // 'FT': 'Two-Seam',
-      '2S': 'Two-Seam',
-      // 'SI': 'Sinker',
-      'CH': 'Changeup',
-      // 'CU': 'Curveball',
-      'SL': 'Slider',
-      'CT': 'Cutter',
-      'SP': 'Splitter',
-      'SW': 'Sweeper',
-      'KN': 'Knuckleball',
-      'CB': 'Curveball'
+      "4S": "Four-Seam",
+      "2S": "Two-Seam",
+      "SI": "Sinker",
+      "CH": "Changeup",
+      "SL": "Slider",
+      "CT": "Cutter",
+      "SP": "Splitter",
+      "SW": "Sweeper",
+      "KN": "Knuckleball",
+      "CB": "Curveball",
     };
     return pitchTypes[code] || code;
   };
@@ -41,35 +38,37 @@ export const LeaderboardSection = ({ pitcherStats }) => {
   // Helper function to calculate in-zone percentage
   const calculateInZonePercent = (locations) => {
     if (!locations || locations.length === 0) return 0;
-    const inZone = locations.filter(loc => 
-      Math.abs(loc.plate_x) <= 0.851 && 
-      loc.plate_z >= 1.5 && 
-      loc.plate_z <= 3.5
+    const inZone = locations.filter(
+      (loc) =>
+        Math.abs(loc.plate_x) <= 0.851 &&
+        loc.plate_z >= 1.5 &&
+        loc.plate_z <= 3.5
     );
     return (inZone.length / locations.length) * 100;
   };
 
   // Process data for leaderboards
   const processLeaderboardData = () => {
-    if (!pitcherStats || pitcherStats.length === 0) return { 
-      velocity: [], 
-      spinRate: [], 
-      inZone: [], 
-      whiffRate: [],
-      exitVelo: [],
-      inningsPitched: []  // Add new array for innings pitched leaders
-    };
+    if (!pitcherStats || pitcherStats.length === 0)
+      return {
+        velocity: [],
+        spinRate: [],
+        inZone: [],
+        whiffRate: [],
+        exitVelo: [],
+        inningsPitched: [],
+      };
 
     const allPitches = [];
     const exitVeloData = [];
-    const inningsPitchedData = [];  // New array for innings pitched data
+    const inningsPitchedData = []; // New array for innings pitched data
 
-    pitcherStats.forEach(pitcher => {
+    pitcherStats.forEach((pitcher) => {
       // Add pitcher to innings pitched array
       if (pitcher.innings_pitched !== undefined) {
         inningsPitchedData.push({
           pitcherName: pitcher.name,
-          innings: pitcher.innings_pitched
+          innings: pitcher.innings_pitched,
         });
       }
 
@@ -77,13 +76,13 @@ export const LeaderboardSection = ({ pitcherStats }) => {
       if (pitcher.avg_hit_speed !== undefined) {
         exitVeloData.push({
           pitcherName: pitcher.name,
-          avgExitVelo: pitcher.avg_hit_speed
+          avgExitVelo: pitcher.avg_hit_speed,
         });
       }
 
       // Rest of the existing pitch data processing
       if (pitcher.pitch_data) {
-        pitcher.pitch_data.forEach(pitch => {
+        pitcher.pitch_data.forEach((pitch) => {
           allPitches.push({
             pitcherName: pitcher.name,
             pitchType: pitch.pitch_type,
@@ -91,7 +90,7 @@ export const LeaderboardSection = ({ pitcherStats }) => {
             avgVelocity: pitch.avg_velocity || 0,
             avgSpin: pitch.avg_spin_rate || 0,
             locations: pitch.locations || [],
-            whiffPct: pitch.whiff_pct || 0
+            whiffPct: pitch.whiff_pct || 0,
           });
         });
       }
@@ -101,25 +100,21 @@ export const LeaderboardSection = ({ pitcherStats }) => {
       velocity: allPitches
         .sort((a, b) => b.avgVelocity - a.avgVelocity)
         .slice(0, 5),
-      spinRate: allPitches
-        .sort((a, b) => b.avgSpin - a.avgSpin)
-        .slice(0, 5),
+      spinRate: allPitches.sort((a, b) => b.avgSpin - a.avgSpin).slice(0, 5),
       inZone: allPitches
-        .map(pitch => ({
+        .map((pitch) => ({
           ...pitch,
-          inZonePercent: calculateInZonePercent(pitch.locations)
+          inZonePercent: calculateInZonePercent(pitch.locations),
         }))
         .sort((a, b) => b.inZonePercent - a.inZonePercent)
         .slice(0, 5),
-      whiffRate: allPitches
-        .sort((a, b) => b.whiffPct - a.whiffPct)
-        .slice(0, 5),
+      whiffRate: allPitches.sort((a, b) => b.whiffPct - a.whiffPct).slice(0, 5),
       exitVelo: exitVeloData
-        .sort((a, b) => a.avgExitVelo - b.avgExitVelo)  // Sort ascending (lower is better)
+        .sort((a, b) => a.avgExitVelo - b.avgExitVelo) // Sort ascending (lower is better)
         .slice(0, 5),
       inningsPitched: inningsPitchedData
-        .sort((a, b) => b.innings - a.innings)  // Sort descending (higher is better)
-        .slice(0, 5)
+        .sort((a, b) => b.innings - a.innings) // Sort descending (higher is better)
+        .slice(0, 5),
     };
   };
 
@@ -134,7 +129,10 @@ export const LeaderboardSection = ({ pitcherStats }) => {
         <div className="card-body">
           <div className="list-group">
             {leaderboards.velocity.map((pitch, idx) => (
-              <div key={`${pitch.pitcherName}-${pitch.pitchType}-velo`} className="list-group-item">
+              <div
+                key={`${pitch.pitcherName}-${pitch.pitchType}-velo`}
+                className="list-group-item"
+              >
                 <div className="player-info">
                   <div className="player-name">
                     {getPlaceIcon(idx)}
@@ -158,7 +156,10 @@ export const LeaderboardSection = ({ pitcherStats }) => {
         <div className="card-body">
           <div className="list-group">
             {leaderboards.spinRate.map((pitch, idx) => (
-              <div key={`${pitch.pitcherName}-${pitch.pitchType}-spin`} className="list-group-item">
+              <div
+                key={`${pitch.pitcherName}-${pitch.pitchType}-spin`}
+                className="list-group-item"
+              >
                 <div className="player-info">
                   <div className="player-name">
                     {getPlaceIcon(idx)}
@@ -182,7 +183,10 @@ export const LeaderboardSection = ({ pitcherStats }) => {
         <div className="card-body">
           <div className="list-group">
             {leaderboards.inZone.map((pitch, idx) => (
-              <div key={`${pitch.pitcherName}-${pitch.pitchType}-zone`} className="list-group-item">
+              <div
+                key={`${pitch.pitcherName}-${pitch.pitchType}-zone`}
+                className="list-group-item"
+              >
                 <div className="player-info">
                   <div className="player-name">
                     {getPlaceIcon(idx)}
@@ -206,7 +210,10 @@ export const LeaderboardSection = ({ pitcherStats }) => {
         <div className="card-body">
           <div className="list-group">
             {leaderboards.whiffRate.map((pitch, idx) => (
-              <div key={`${pitch.pitcherName}-${pitch.pitchType}-whiff`} className="list-group-item">
+              <div
+                key={`${pitch.pitcherName}-${pitch.pitchType}-whiff`}
+                className="list-group-item"
+              >
                 <div className="player-info">
                   <div className="player-name">
                     {getPlaceIcon(idx)}
@@ -230,7 +237,10 @@ export const LeaderboardSection = ({ pitcherStats }) => {
         <div className="card-body">
           <div className="list-group">
             {leaderboards.exitVelo.map((pitcher, idx) => (
-              <div key={`${pitcher.pitcherName}-exit-velo`} className="list-group-item">
+              <div
+                key={`${pitcher.pitcherName}-exit-velo`}
+                className="list-group-item"
+              >
                 <div className="player-info">
                   <div className="player-name">
                     {getPlaceIcon(idx)}
@@ -253,7 +263,10 @@ export const LeaderboardSection = ({ pitcherStats }) => {
         <div className="card-body">
           <div className="list-group">
             {leaderboards.inningsPitched.map((pitcher, idx) => (
-              <div key={`${pitcher.pitcherName}-innings`} className="list-group-item">
+              <div
+                key={`${pitcher.pitcherName}-innings`}
+                className="list-group-item"
+              >
                 <div className="player-info">
                   <div className="player-name">
                     {getPlaceIcon(idx)}

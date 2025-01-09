@@ -17,7 +17,7 @@ export const Header = () => {
 
   const effectiveTeamId = teamId || localStorage.getItem("lastTeamId");
 
-  // Add team options
+  // Team options
   const teams = [
     "Arizona Diamondbacks",
     "Atlanta Braves",
