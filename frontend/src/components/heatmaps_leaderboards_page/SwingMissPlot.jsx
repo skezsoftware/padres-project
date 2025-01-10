@@ -19,7 +19,7 @@ export const SwingMissPlot = ({
   useEffect(() => {
     if (!data) return;
 
-    // Filter for swinging strikes only
+    // Swinging strikes only
     const swingMissData = data.filter((d) => d.swinging_strike === true);
 
     const svg = d3

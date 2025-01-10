@@ -36,7 +36,7 @@ export const TeamGrid = () => {
           setError(result.error);
         }
       } catch (err) {
-        setError("Failed to fetch teams");
+        setError("Failed to fetch teams, check if the server is running.");
       } finally {
         setLoading(false);
       }

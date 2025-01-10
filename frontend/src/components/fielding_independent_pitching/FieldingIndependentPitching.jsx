@@ -76,7 +76,7 @@ export const FieldingIndependentPitching = ({ teamId, filters }) => {
       .range([0, height])
       .padding(0.1);
 
-    // Check for any negative values
+    // Check negative values
     const minFIP = d3.min(data, (d) => d.fip) || 0;
     const hasNegatives = minFIP < 0;
 

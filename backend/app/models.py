@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 
+
 class PitchLocation(BaseModel):
     plate_x: float
     plate_z: float
     swinging_strike: bool
+
 
 class PitchData(BaseModel):
     pitch_type: str
@@ -13,6 +15,7 @@ class PitchData(BaseModel):
     avg_velocity: float
     avg_spin_rate: float
     locations: List[PitchLocation]
+
 
 class PitcherStats(BaseModel):
     name: str
@@ -26,9 +29,10 @@ class PitcherStats(BaseModel):
     total_batters: Optional[int] = None
     fip: Optional[float]
     innings_pitched: float
-    hard_hit_pct: Optional[float] = None 
+    hard_hit_pct: Optional[float] = None
     pitch_data: Optional[List[PitchData]] = None
     avg_hit_speed: Optional[float] = None
+
 
 class PitcherStatsResponse(BaseModel):
     success: bool

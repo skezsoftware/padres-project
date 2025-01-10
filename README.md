@@ -2,6 +2,12 @@
 
 A web application for analyzing MLB pitching statistics and key performance indicators, focusing on the San Diego Padres' July 2024 games.
 
+#### Environment Variables
+
+This project includes a `.env` file in the backend folder for simplicity and good practice. The file contains configuration values necessary to run the project, but it does not contain sensitive data.
+
+Feel free to modify the values in the `.env` file if needed for your setup.
+
 ## Prerequisites Installation
 
 Before starting, you'll need to install:
@@ -65,10 +71,13 @@ macOS/Linux:
 python3 -m venv venv
 source venv/bin/activate
 
-3. Install required Python packages:
+3. Copy the .env.example file to .env:
+cp .env.example .env
+
+4. Install required Python packages:
 pip install -r requirements.txt
 
-4. Start the backend server:
+5. Start the backend server:
 uvicorn app.main:app --reload
 
 The backend API will run on http://localhost:8000
@@ -97,9 +106,10 @@ The backend API will run on http://localhost:8000
 If you encounter any issues:
 
 1. Ensure both frontend and backend servers are running
-2. Verify that ports 5173 and 8000 are available on your system
-3. Make sure all dependencies are properly installed
-4. Common solutions:
+2. Note: The BACKEND_CORS_ORIGINS value in the .env file is formatted as a string representation of a list (e.g., ['http://localhost:5173']). This is intended for the application to parse correctly.
+3. Verify that ports 5173 and 8000 are available on your system
+4. Make sure all dependencies are properly installed
+5. Common solutions:
    - If npm install fails, try deleting node_modules folder and package-lock.json, then run npm install again
    - If Python packages fail to install, ensure you're using Python 3.8 or higher
    - If ports are in use, you may need to kill existing processes or use different ports

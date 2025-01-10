@@ -20,6 +20,7 @@ app.add_middleware(
 app.include_router(pitcher_stats.router, prefix=settings.API_V1_STR)
 app.include_router(teams.router, prefix=settings.API_V1_STR)
 
+
 @app.get("/")
 async def root():
     return {"message": f"Welcome to the {settings.PROJECT_NAME}"}
