@@ -92,17 +92,6 @@ The backend API will run on http://localhost:8000
   - Fielding Independent Pitching (FIP)
   - Pitch-specific metrics
 
-## Project Structure
-
-project-root/
-├── frontend/          # React frontend application
-│   ├── public/        
-│   │   └── assets/    # Team logo images (included in repository)
-│   └── src/           # React source code
-└── backend/           # FastAPI backend application
-    ├── app/           # API implementation
-    └── requirements.txt # Python dependencies
-
 ## Troubleshooting
 
 If you encounter any issues:
