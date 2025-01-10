@@ -6,7 +6,7 @@ export const Home = () => {
   return (
     <div className="home-container">
       <div className="intro-text">
-        <h1>Padres Pitching KPI Hub</h1>
+        <h1>Padres Pitching Key Performance Indicators Hub</h1>
         <p>
           Explore comprehensive pitching statistics and key performance indicators from the San Diego Padres' July 2024 games. 
           Select the Padres to analyze their pitching staff's performance, or choose any other team to see how their 
