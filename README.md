@@ -107,13 +107,13 @@ If you encounter any issues:
 ## Common Commands
 
 Frontend:
-- npm install    # (Install dependencies)
-- npm run dev    # (Start development server)
-- npm run build  # (Build for production)
+- npm install    (Install dependencies)
+- npm run dev    (Start development server)
+- npm run build  (Build for production)
 
 Backend:
-- pip install -r requirements.txt  # (Install Python dependencies)
-- uvicorn app.main:app --reload   # (Start development server)
+- pip install -r requirements.txt  (Install Python dependencies)
+- uvicorn app.main:app --reload   (Start development server)
 
 
 
