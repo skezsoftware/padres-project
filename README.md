@@ -46,12 +46,15 @@ cd padres-project
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
+   
 cd frontend
 
 2. Install dependencies:
+   
 npm install
 
 3. Start the development server:
+   
 npm run dev
 
 The frontend will run on http://localhost:5173
@@ -65,11 +68,13 @@ cd backend
 2. Create and activate a virtual environment:
 
 Windows:
+
 python -m venv venv
 
 .\venv\Scripts\activate
 
 macOS/Linux:
+
 python3 -m venv venv
 
 source venv/bin/activate
@@ -79,6 +84,7 @@ source venv/bin/activate
 cp .env.example .env
 
 4. Install required Python packages:
+   
 pip install -r requirements.txt
 
 5. Start the backend server:
