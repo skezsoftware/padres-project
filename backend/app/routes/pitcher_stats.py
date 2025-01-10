@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from typing import Optional, Dict, List
 from ..database import db
 from ..models import PitcherStats, PitcherStatsResponse, PitchData, PitchLocation
 import pandas as pd
 from statistics import mean
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -16,20 +18,21 @@ async def get_pitcher_stats(
     team: Optional[str] = Query(None, description="Filter by specific team"),
     min_pitches: Optional[int] = Query(None, description="Minimum number of pitches", ge=0),
     min_strikeout_pct: Optional[float] = Query(None, description="Minimum strikeout percentage", ge=0, le=100),
-    max_strikeout_pct: Optional[float] = Query(None, description="Maximum strikeout percentage", ge=0, le=100),
     min_walk_pct: Optional[float] = Query(None, description="Minimum walk percentage", ge=0, le=100),
-    max_walk_pct: Optional[float] = Query(None, description="Maximum walk percentage", ge=0, le=100),
     min_first_pitch_strike_pct: Optional[float] = Query(None, description="Minimum first pitch strike percentage", ge=0, le=100),
-    max_first_pitch_strike_pct: Optional[float] = Query(None, description="Maximum first pitch strike percentage", ge=0, le=100),
     min_k_minus_bb: Optional[float] = Query(None, description="Minimum K-BB%", ge=-100, le=100),
-    max_k_minus_bb: Optional[float] = Query(None, description="Maximum K-BB%", ge=-100, le=100),
     min_batters: Optional[int] = Query(None, description="Minimum batters faced", ge=0),
-    max_batters: Optional[int] = Query(None, description="Maximum batters faced", ge=0),
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)")
 ):
     try:
+        logger.info(f"Processing pitcher stats request - team: {team}, sort: {sort_by}")
         df = db.get_dataframe()
+        
+        if team:
+            logger.debug(f"Filtering by team: {team}")
+        if pitcher_type != "all":
+            logger.debug(f"Filtering by pitcher type: {pitcher_type}")
         
         # Apply date filters if provided
         if start_date:
@@ -108,25 +111,15 @@ async def get_pitcher_stats(
             # Performance threshold filters
             if min_strikeout_pct and strikeout_pct < min_strikeout_pct:
                 continue
-            if max_strikeout_pct and strikeout_pct > max_strikeout_pct:
-                continue
             if min_walk_pct and walk_pct < min_walk_pct:
-                continue
-            if max_walk_pct and walk_pct > max_walk_pct:
                 continue
             if min_first_pitch_strike_pct and first_pitch_strike_pct < min_first_pitch_strike_pct:
                 continue
-            if max_first_pitch_strike_pct and first_pitch_strike_pct > max_first_pitch_strike_pct:
-                continue
             if min_k_minus_bb is not None and k_bb_ratio < min_k_minus_bb:
-                continue
-            if max_k_minus_bb is not None and k_bb_ratio > max_k_minus_bb:
                 continue
             
             # Apply batters faced filters
             if min_batters and total_batters < min_batters:
-                continue
-            if max_batters and total_batters > max_batters:
                 continue
             
             # Calculate pitch type data
@@ -195,13 +188,7 @@ async def get_pitcher_stats(
             stats.sort(key=lambda x: x.fip if x.fip is not None else float('inf'), 
                       reverse=(order == "desc"))
         
-        # Add some debug logging
-        print("\nDEBUG: Sorting Stats")
-        print(f"Sort by: {sort_by}")
-        print(f"Order: {order}")
-        for stat in stats[:5]:
-            print(f"Name: {stat.name}, K/BB: {stat.k_bb_ratio}")
-        
+        logger.info(f"Successfully processed {len(stats)} pitcher records")
         
         return PitcherStatsResponse(
             success=True,
@@ -209,9 +196,8 @@ async def get_pitcher_stats(
         )
         
     except Exception as e:
-        print(f"Error: {e}")
-        return PitcherStatsResponse(
-            success=False,
-            data=[],
-            error=str(e)
+        logger.error(f"Error processing pitcher stats: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to process pitcher statistics"
         )

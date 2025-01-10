@@ -21,7 +21,6 @@ class PitcherStats(BaseModel):
     first_pitch_strike_pct: Optional[float] = None
     strikeout_pct: Optional[float] = None
     walk_pct: Optional[float] = None
-    # k_minus_bb: Optional[float] = None
     k_bb_ratio: Optional[float] = None
     total_pitches: Optional[int] = None
     total_batters: Optional[int] = None

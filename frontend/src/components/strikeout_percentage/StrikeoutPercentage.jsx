@@ -7,6 +7,7 @@ export const StrikeoutPercentage = ({ teamId, filters }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const svgRef = useRef();
+  const mlbAverage = 22.6; 
 
   // Fetch data from API
   useEffect(() => {
@@ -19,9 +20,7 @@ export const StrikeoutPercentage = ({ teamId, filters }) => {
           ...(filters?.startDate && { start_date: filters.startDate }),
           ...(filters?.endDate && { end_date: filters.endDate }),
           ...(filters?.minPitches && { min_pitches: filters.minPitches }),
-          ...(filters?.maxPitches && { max_pitches: filters.maxPitches }),
           ...(filters?.minBatters && { min_batters: filters.minBatters }),
-          ...(filters?.maxBatters && { max_batters: filters.maxBatters }),
           ...(filters?.pitcherType !== "all" && {
             pitcher_type: filters.pitcherType,
           }),
@@ -31,13 +30,16 @@ export const StrikeoutPercentage = ({ teamId, filters }) => {
           `http://localhost:8000/api/v1/pitcher-stats?${queryParams}`
         );
         const result = await response.json();
-        if (result.success) {
-          setData(result.data.slice(0, 20)); // Default to top 20
+        
+        // Set data if successful results with data
+        if (result.success && result.data && result.data.length > 0) {
+          setData(result.data.slice(0, 20));
         } else {
-          setError(result.error);
+          setData([]);
         }
       } catch (err) {
         setError("Failed to fetch data");
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -48,12 +50,10 @@ export const StrikeoutPercentage = ({ teamId, filters }) => {
 
   // D3 visualization
   useEffect(() => {
-    if (!data.length || !svgRef.current) return;
-
-    // Clear previous content
+    // Remove early return to always draw background
     d3.select(svgRef.current).selectAll("*").remove();
 
-    const margin = { top: 40, right: 30, bottom: 140, left: 60 };
+    const margin = { top: 40, right: 30, bottom: 150, left: 60 };
     const width = 1000 - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
 
@@ -64,145 +64,142 @@ export const StrikeoutPercentage = ({ teamId, filters }) => {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Scales
-    const x = d3
-      .scaleBand()
-      .range([0, width])
-      .domain(data.map((d) => d.name))
-      .padding(0.2);
-
+    // Set y scale with dynamic domain based on data
     const y = d3
       .scaleLinear()
       .range([height, 0])
       .domain([
         0,
-        Math.min(100, Math.ceil(d3.max(data, (d) => d.strikeout_pct) * 1.1)),
+        Math.max(
+          mlbAverage + 5,
+          data.length > 0 ? d3.max(data, (d) => d.strikeout_pct) : 30
+        ),
       ]);
-
-    // X axis
-    svg
-      .append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x))
-      .selectAll("text")
-      .attr("transform", "rotate(-45)")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", "-.2em")
-      .style("font-size", "18px")
-      .style("font-weight", "500")
-      .style("font-family", "Arial");
 
     // Y axis
     svg
       .append("g")
-      .call(
-        d3
-          .axisLeft(y)
-          .ticks(10)
-          .tickFormat((d) => `${d}%`)
-      )
+      .call(d3.axisLeft(y).tickFormat(d => `${d}%`))
       .selectAll("text")
       .style("font-size", "18px")
       .style("font-weight", "500")
       .style("font-family", "Arial");
 
-    // Color gradient
-    const colorScale = d3
-      .scaleLinear()
-      .domain([
-        d3.min(data, (d) => d.strikeout_pct),
-        d3.max(data, (d) => d.strikeout_pct),
-      ])
-      .range(["#cfe2f3", "#0b5394"]);
-
-    // Background colors
-    const mlbAverage = 22.6;
-
-    // Background rectangle for below average
+    // Background rectangles
     svg
       .append("rect")
       .attr("x", 0)
       .attr("y", y(mlbAverage))
       .attr("width", width)
       .attr("height", height - y(mlbAverage))
-      .attr("fill", "#ffebeb") // Very light red
+      .attr("fill", "#ffebeb")
       .attr("opacity", 0.4);
 
-    // Background rectangle for above average
     svg
       .append("rect")
       .attr("x", 0)
       .attr("y", 0)
       .attr("width", width)
       .attr("height", y(mlbAverage))
-      .attr("fill", "#ebffeb") // Very light green
+      .attr("fill", "#ebffeb")
       .attr("opacity", 0.4);
 
-    // Bars
-    svg
-      .selectAll("rect.bar")
-      .data(data)
-      .enter()
-      .append("rect")
-      .attr("class", "bar")
-      .attr("x", (d) => x(d.name))
-      .attr("y", (d) => y(d.strikeout_pct))
-      .attr("width", x.bandwidth())
-      .attr("height", (d) => height - y(d.strikeout_pct))
-      .style("fill", (d) => colorScale(d.strikeout_pct))
-      .style("cursor", "pointer")
-      .on("mouseover", function (event, d) {
-        d3.select(this).attr("opacity", 0.8);
+    // Draw bars and x-axis if data
+    if (data.length > 0) {
+      const x = d3
+        .scaleBand()
+        .range([0, width])
+        .domain(data.map((d) => d.name))
+        .padding(0.2);
 
-        // Calculate position
-        const boxHeight = 60;
-        const boxWidth = 180; // Increased width
-        const yPosition = Math.max(y(d.strikeout_pct) - 70, 10); // Ensure minimum distance from top
+      // X axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("transform", "rotate(-45)")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", "-.2em")
+        .style("font-size", "18px")
+        .style("font-weight", "500")
+        .style("font-family", "Arial");
 
-        // Background rectangle for text
-        svg
-          .append("rect")
-          .attr("class", "text-background")
-          .attr("x", x(d.name) + x.bandwidth() / 2 - boxWidth / 2)
-          .attr("y", yPosition)
-          .attr("width", boxWidth)
-          .attr("height", boxHeight)
-          .attr("fill", "white")
-          .attr("opacity", 0.95) // Slightly more opaque
-          .attr("rx", 5)
-          .style("filter", "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))");
+      // Color scale for bars
+      const colorScale = d3
+        .scaleLinear()
+        .domain([
+          d3.min(data, (d) => d.strikeout_pct),
+          d3.max(data, (d) => d.strikeout_pct),
+        ])
+        .range(["#cfe2f3", "#0b5394"]);
 
-        // Highlighted name
-        svg
-          .append("text")
-          .attr("class", "highlight-name")
-          .attr("x", x(d.name) + x.bandwidth() / 2)
-          .attr("y", yPosition + 25) // Adjusted positioning
-          .attr("text-anchor", "middle")
-          .style("font-size", "18px")
-          .style("font-weight", "bold")
-          .text(d.name);
+      // Draw bars
+      svg
+        .selectAll("rect.bar")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", (d) => x(d.name))
+        .attr("y", (d) => y(d.strikeout_pct))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => height - y(d.strikeout_pct))
+        .style("fill", (d) => colorScale(d.strikeout_pct))
+        .style("cursor", "pointer")
+        .on("mouseover", function (event, d) {
+          d3.select(this).attr("opacity", 0.8);
 
-        // Percentage and type
-        svg
-          .append("text")
-          .attr("class", "value-label")
-          .attr("x", x(d.name) + x.bandwidth() / 2)
-          .attr("y", yPosition + 45) // Adjusted positioning
-          .attr("text-anchor", "middle")
-          .style("font-size", "16px")
-          .style("font-weight", "bold")
-          .text(`${d.strikeout_pct.toFixed(1)}% (${d.type})`);
-      })
-      .on("mouseout", function () {
-        d3.select(this).attr("opacity", 1);
-        svg.selectAll(".value-label").remove();
-        svg.selectAll(".highlight-name").remove();
-        svg.selectAll(".text-background").remove();
-      });
+          // Calculate position for tooltip
+          const boxHeight = 60;
+          const boxWidth = 180;
+          const yPosition = Math.max(y(d.strikeout_pct) - 70, 10);
 
-    // MLB average line
+          // Background rectangle for text
+          svg
+            .append("rect")
+            .attr("class", "text-background")
+            .attr("x", x(d.name) + x.bandwidth() / 2 - boxWidth / 2)
+            .attr("y", yPosition)
+            .attr("width", boxWidth)
+            .attr("height", boxHeight)
+            .attr("fill", "white")
+            .attr("opacity", 0.95)
+            .attr("rx", 5)
+            .style("filter", "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))");
+
+          // Highlighted name
+          svg
+            .append("text")
+            .attr("class", "highlight-name")
+            .attr("x", x(d.name) + x.bandwidth() / 2)
+            .attr("y", yPosition + 25)
+            .attr("text-anchor", "middle")
+            .style("font-size", "18px")
+            .style("font-weight", "bold")
+            .text(d.name);
+
+          // Percentage and type
+          svg
+            .append("text")
+            .attr("class", "value-label")
+            .attr("x", x(d.name) + x.bandwidth() / 2)
+            .attr("y", yPosition + 45)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("font-weight", "bold")
+            .text(`${d.strikeout_pct.toFixed(1)}% (${d.type})`);
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr("opacity", 1);
+          svg.selectAll(".value-label").remove();
+          svg.selectAll(".highlight-name").remove();
+          svg.selectAll(".text-background").remove();
+        });
+    }
+
+    // MLB average line and label
     svg
       .append("line")
       .attr("x1", 0)
@@ -213,13 +210,12 @@ export const StrikeoutPercentage = ({ teamId, filters }) => {
       .style("stroke-width", 3)
       .style("stroke-dasharray", "10,10");
 
-    // MLB average label
     svg
       .append("text")
       .attr("x", width)
       .attr("y", y(mlbAverage) - 5)
       .attr("text-anchor", "end")
-      .style("font-size", "16px")
+      .style("font-size", "17px")
       .style("font-weight", "500")
       .style("font-family", "Arial")
       .text("MLB Average (22.6%)");

@@ -61,7 +61,7 @@ export const LeaderboardSection = ({ pitcherStats }) => {
 
     const allPitches = [];
     const exitVeloData = [];
-    const inningsPitchedData = []; // New array for innings pitched data
+    const inningsPitchedData = []; 
 
     pitcherStats.forEach((pitcher) => {
       // Add pitcher to innings pitched array

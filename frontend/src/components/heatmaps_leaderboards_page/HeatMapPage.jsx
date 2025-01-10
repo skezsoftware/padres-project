@@ -3,6 +3,7 @@ import { ScatterPlot } from "./ScatterPlot";
 import { SwingMissPlot } from "./SwingMissPlot";
 import { LeaderboardSection } from "./LeaderboardWidget";
 import "./heatMapPage.css";
+import { useParams } from "react-router-dom";
 
 const PITCH_TYPE_NAMES = {
   "4S": "Four-Seam",
@@ -29,15 +30,28 @@ const PITCH_COLORS = {
 };
 
 export const HeatMapPage = () => {
+  const { teamId } = useParams();
   const [pitcherStats, setPitcherStats] = useState([]);
-  const [selectedPitcher, setSelectedPitcher] = useState(null);
+  const [selectedPitcher, setSelectedPitcher] = useState(() => {
+    return localStorage.getItem("lastSelectedPitcher") || null;
+  });
   const [selectedPitcherData, setSelectedPitcherData] = useState(null);
-  const effectiveTeamId = localStorage.getItem("lastTeamId");
+
+  useEffect(() => {
+    setSelectedPitcher(null);
+    localStorage.removeItem("lastSelectedPitcher");
+  }, [teamId]);
+
+  useEffect(() => {
+    if (selectedPitcher) {
+      localStorage.setItem("lastSelectedPitcher", selectedPitcher);
+    }
+  }, [selectedPitcher]);
 
   useEffect(() => {
     const fetchPitcherStats = async () => {
       try {
-        const encodedTeam = encodeURIComponent(effectiveTeamId);
+        const encodedTeam = encodeURIComponent(teamId);
         const url = `http://localhost:8000/api/v1/pitcher-stats?team=${encodedTeam}`;
         const response = await fetch(url);
 
@@ -57,10 +71,10 @@ export const HeatMapPage = () => {
       }
     };
 
-    if (effectiveTeamId) {
+    if (teamId) {
       fetchPitcherStats();
     }
-  }, [effectiveTeamId]);
+  }, [teamId]);
 
   useEffect(() => {
     if (selectedPitcher && pitcherStats.length > 0) {

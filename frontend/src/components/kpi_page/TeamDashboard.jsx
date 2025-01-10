@@ -12,14 +12,14 @@ import "./TeamDashboard.css";
 
 export const TeamDashboard = () => {
   const { teamId } = useParams();
-  const [activeChart, setActiveChart] = useState("strikeout");
+  const [activeChart, setActiveChart] = useState(() => {
+    return localStorage.getItem("lastActiveChart") || "strikeout";
+  });
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
     minPitches: "",
-    maxPitches: "",
     minBatters: "",
-    maxBatters: "",
     pitcherType: "all",
   });
 
@@ -29,6 +29,10 @@ export const TeamDashboard = () => {
       getTeamColor(teamId)
     );
   }, [teamId]);
+
+  useEffect(() => {
+    localStorage.setItem("lastActiveChart", activeChart);
+  }, [activeChart]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -50,9 +54,7 @@ export const TeamDashboard = () => {
       startDate: "",
       endDate: "",
       minPitches: "",
-      maxPitches: "",
       minBatters: "",
-      maxBatters: "",
       pitcherType: "all",
     });
   };
@@ -226,14 +228,6 @@ export const TeamDashboard = () => {
               onChange={handleFilterChange}
               placeholder="Min Pitches"
             />
-            <input
-              type="number"
-              name="maxPitches"
-              min="0"
-              value={filters.maxPitches}
-              onChange={handleFilterChange}
-              placeholder="Max Pitches"
-            />
           </div>
 
           <div className="filter-group">
@@ -245,14 +239,6 @@ export const TeamDashboard = () => {
               value={filters.minBatters}
               onChange={handleFilterChange}
               placeholder="Min Batters"
-            />
-            <input
-              type="number"
-              name="maxBatters"
-              min="0"
-              value={filters.maxBatters}
-              onChange={handleFilterChange}
-              placeholder="Max Batters"
             />
           </div>
 

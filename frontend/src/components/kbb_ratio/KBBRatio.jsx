@@ -7,6 +7,7 @@ export const KBBRatio = ({ teamId, filters }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const svgRef = useRef();
+  const mlbAverage = 2.76;
 
   // Fetch data from API
   useEffect(() => {
@@ -19,9 +20,7 @@ export const KBBRatio = ({ teamId, filters }) => {
           ...(filters?.startDate && { start_date: filters.startDate }),
           ...(filters?.endDate && { end_date: filters.endDate }),
           ...(filters?.minPitches && { min_pitches: filters.minPitches }),
-          ...(filters?.maxPitches && { max_pitches: filters.maxPitches }),
           ...(filters?.minBatters && { min_batters: filters.minBatters }),
-          ...(filters?.maxBatters && { max_batters: filters.maxBatters }),
           ...(filters?.pitcherType !== "all" && {
             pitcher_type: filters.pitcherType,
           }),
@@ -48,13 +47,12 @@ export const KBBRatio = ({ teamId, filters }) => {
 
   // D3 visualization
   useEffect(() => {
-    if (!data.length || !svgRef.current) return;
-
+    // Remove early return to always draw background
     d3.select(svgRef.current).selectAll("*").remove();
 
-    const margin = { top: 40, right: 30, bottom: 160, left: 60 };
+    const margin = { top: 40, right: 30, bottom: 170, left: 60 };
     const width = 1000 - margin.left - margin.right;
-    const height = 600 - margin.top - margin.bottom;
+    const height = 520 - margin.top - margin.bottom;
 
     const svg = d3
       .select(svgRef.current)
@@ -63,149 +61,148 @@ export const KBBRatio = ({ teamId, filters }) => {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Color scale (higher K/BB ratio is better)
-    const colorScale = d3
-      .scaleLinear()
-      .domain([
-        d3.min(data, (d) => d.k_bb_ratio),
-        d3.max(data, (d) => d.k_bb_ratio),
-      ])
-      .range(["#cfe2f3", "#0b5394"]); // Light blue to dark blue
-
-    // Create scales
-    const x = d3
-      .scaleBand()
-      .range([0, width])
-      .domain(data.map((d) => d.name))
-      .padding(0.2);
-
+    // Set y scale with dynamic domain based on data
     const y = d3
       .scaleLinear()
       .range([height, 0])
       .domain([
         0,
         Math.max(
-          2.76 * 1.1,
-          d3.max(data, (d) => d.k_bb_ratio)
+          mlbAverage + 2,
+          data.length > 0 ? d3.max(data, (d) => d.k_bb_ratio) : 5
         ),
       ]);
 
-    // Background colors (should be first, behind everything)
-    const mlbAverage = 2.76;
+    // Y axis
+    svg
+      .append("g")
+      .call(d3.axisLeft(y))
+      .selectAll("text")
+      .style("font-size", "18px")
+      .style("font-weight", "500")
+      .style("font-family", "Arial");
 
-    // Background rectangle for below average (light red)
+    // Background rectangles
     svg
       .append("rect")
       .attr("x", 0)
       .attr("y", y(mlbAverage))
       .attr("width", width)
       .attr("height", height - y(mlbAverage))
-      .attr("fill", "#ffebeb") // Very light red
+      .attr("fill", "#ffebeb")
       .attr("opacity", 0.4);
 
-    // Background rectangle for above average (light green)
     svg
       .append("rect")
       .attr("x", 0)
       .attr("y", 0)
       .attr("width", width)
       .attr("height", y(mlbAverage))
-      .attr("fill", "#ebffeb") // Very light green
+      .attr("fill", "#ebffeb")
       .attr("opacity", 0.4);
 
-    // Axes (on top of background, behind bars)
-    svg
-      .append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x))
-      .selectAll("text")
-      .attr("transform", "rotate(-45)")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", ".15em")
-      .style("font-size", "18px")
-      .style("font-weight", "500")
-      .style("font-family", "Arial");
+    if (data.length > 0) {
+      // Color scale
+      const colorScale = d3
+        .scaleLinear()
+        .domain([
+          d3.min(data, (d) => d.k_bb_ratio),
+          d3.max(data, (d) => d.k_bb_ratio),
+        ])
+        .range(["#cfe2f3", "#0b5394"]);
 
-    // Y axis with improved styling
-    svg
-      .append("g")
-      .call(d3.axisLeft(y).ticks(10))
-      .selectAll("text")
-      .style("font-size", "18px")
-      .style("font-weight", "500")
-      .style("font-family", "Arial");
+      // X scale
+      const x = d3
+        .scaleBand()
+        .range([0, width])
+        .domain(data.map((d) => d.name))
+        .padding(0.2);
 
-    // Bars (on top of background and axes)
-    svg
-      .selectAll("rect.bar") // Added class 'bar' to differentiate from background rects
-      .data(data)
-      .enter()
-      .append("rect")
-      .attr("class", "bar")
-      .attr("x", (d) => x(d.name))
-      .attr("y", (d) => y(d.k_bb_ratio))
-      .attr("width", x.bandwidth())
-      .attr("height", (d) => height - y(d.k_bb_ratio))
-      .style("fill", (d) => colorScale(d.k_bb_ratio))
-      .style("cursor", "pointer")
-      .on("mouseover", function (event, d) {
-        d3.select(this).attr("opacity", 0.8);
+      // X axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("transform", "rotate(-45)")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .style("font-size", "18px")
+        .style("font-weight", "500")
+        .style("font-family", "Arial");
 
-        // Calculate position to ensure visibility
-        const boxHeight = 70;
-        const boxWidth = 200;
-        const xPosition = x(d.name) + x.bandwidth() / 2;
+      // Draw bars
+      svg
+        .selectAll("rect.bar")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", (d) => x(d.name))
+        .attr("y", (d) => y(d.k_bb_ratio))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => height - y(d.k_bb_ratio))
+        .style("fill", (d) => colorScale(d.k_bb_ratio))
+        .style("cursor", "pointer")
+        .on("mouseover", function(event, d) {
+          d3.select(this).attr("opacity", 0.8);
 
-        // Adjust xPosition if too close to right edge
-        const adjustedXPosition =
-          xPosition + boxWidth / 2 > width
-            ? xPosition - boxWidth - 20 // Move box to left side of bar
-            : xPosition - boxWidth / 2; // Center on bar
+          // Calculate position to ensure visibility
+          const boxHeight = 70;
+          const boxWidth = 200;
+          const xPosition = x(d.name) + x.bandwidth() / 2;
 
-        // Background rectangle
-        svg
-          .append("rect")
-          .attr("class", "text-background")
-          .attr("x", adjustedXPosition)
-          .attr("y", Math.max(y(d.k_bb_ratio) - 70, 10))
-          .attr("width", boxWidth)
-          .attr("height", boxHeight)
-          .attr("fill", "white")
-          .attr("opacity", 0.95)
-          .attr("rx", 5)
-          .style("filter", "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))");
+          // Adjust xPosition if too close to right edge
+          const adjustedXPosition =
+            xPosition + boxWidth / 2 > width
+              ? xPosition - boxWidth - 20 // Move box to left side of bar
+              : xPosition - boxWidth / 2; // Center on bar
 
-        // Highlighted name
-        svg
-          .append("text")
-          .attr("class", "highlight-name")
-          .attr("x", adjustedXPosition + boxWidth / 2)
-          .attr("y", Math.max(y(d.k_bb_ratio) - 45, 35))
-          .attr("text-anchor", "middle")
-          .style("font-size", "20px")
-          .style("font-weight", "bold")
-          .text(d.name);
+          // Background rectangle
+          svg
+            .append("rect")
+            .attr("class", "text-background")
+            .attr("x", adjustedXPosition)
+            .attr("y", Math.max(y(d.k_bb_ratio) - 70, 10))
+            .attr("width", boxWidth)
+            .attr("height", boxHeight)
+            .attr("fill", "white")
+            .attr("opacity", 0.95)
+            .attr("rx", 5)
+            .style("filter", "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))");
 
-        // Ratio and type
-        svg
-          .append("text")
-          .attr("class", "value-label")
-          .attr("x", adjustedXPosition + boxWidth / 2)
-          .attr("y", Math.max(y(d.k_bb_ratio) - 20, 60))
-          .attr("text-anchor", "middle")
-          .style("font-size", "18px")
-          .style("font-weight", "bold")
-          .text(`${d.k_bb_ratio.toFixed(2)} (${d.type})`);
-      })
-      .on("mouseout", function () {
-        d3.select(this).attr("opacity", 1);
-        svg.selectAll(".value-label").remove();
-        svg.selectAll(".highlight-name").remove();
-        svg.selectAll(".text-background").remove();
-      });
+          // Highlighted name
+          svg
+            .append("text")
+            .attr("class", "highlight-name")
+            .attr("x", adjustedXPosition + boxWidth / 2)
+            .attr("y", Math.max(y(d.k_bb_ratio) - 45, 35))
+            .attr("text-anchor", "middle")
+            .style("font-size", "20px")
+            .style("font-weight", "bold")
+            .text(d.name);
 
-    // MLB average line (on top of everything)
+          // Ratio and type
+          svg
+            .append("text")
+            .attr("class", "value-label")
+            .attr("x", adjustedXPosition + boxWidth / 2)
+            .attr("y", Math.max(y(d.k_bb_ratio) - 20, 60))
+            .attr("text-anchor", "middle")
+            .style("font-size", "18px")
+            .style("font-weight", "bold")
+            .text(`${d.k_bb_ratio.toFixed(2)} (${d.type})`);
+        })
+        .on("mouseout", function() {
+          d3.select(this).attr("opacity", 1);
+          svg.selectAll(".value-label").remove();
+          svg.selectAll(".highlight-name").remove();
+          svg.selectAll(".text-background").remove();
+        });
+    }
+
+    // MLB average line and label
     svg
       .append("line")
       .attr("x1", 0)
@@ -216,13 +213,12 @@ export const KBBRatio = ({ teamId, filters }) => {
       .style("stroke-width", 3)
       .style("stroke-dasharray", "10,10");
 
-    // MLB average label
     svg
       .append("text")
       .attr("x", width)
       .attr("y", y(mlbAverage) - 5)
       .attr("text-anchor", "end")
-      .style("font-size", "16px")
+      .style("font-size", "17px")
       .style("font-weight", "500")
       .style("font-family", "Arial")
       .text("MLB Average (2.76)");

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { getTeamColor } from "../../utils/teamColors";
+import { teamLogos } from "../../utils/teamLogos";
 import "./header.css";
 
 export const Header = () => {
@@ -12,6 +13,7 @@ export const Header = () => {
   React.useEffect(() => {
     if (teamId) {
       localStorage.setItem("lastTeamId", teamId);
+      localStorage.removeItem("lastSelectedPitcher");
     }
   }, [teamId]);
 
@@ -33,7 +35,8 @@ export const Header = () => {
   const handleTeamChange = (e) => {
     const newTeam = e.target.value;
     if (newTeam) {
-      navigate(`/team/${newTeam}`);
+      const pathType = location.pathname.split('/')[1];
+      navigate(`/${pathType}/${newTeam}`);
     }
   };
 
@@ -49,7 +52,15 @@ export const Header = () => {
       style={{ backgroundColor: teamColor }}
     >
       <div className="container-fluid">
-        <span className="navbar-brand text-white">{effectiveTeamId}</span>
+        <div className="navbar-brand d-flex align-items-center">
+          {effectiveTeamId && (
+            <img 
+              src={teamLogos[effectiveTeamId]}
+              alt={`${effectiveTeamId} logo`}
+              className="team-logo"
+            />
+          )}
+        </div>
 
         <button
           className="navbar-toggler"

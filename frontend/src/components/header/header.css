@@ -4,6 +4,13 @@
   min-height: 80px;
 }
 
+.team-logo {
+  height: 80px;
+  width: auto;
+  max-width: 120px;
+  margin-left: 20px;
+}
+
 .navbar .container-fluid {
   display: flex;
   align-items: center;
