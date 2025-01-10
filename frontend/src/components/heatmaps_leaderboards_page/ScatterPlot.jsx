@@ -10,13 +10,6 @@ export const ScatterPlot = ({
   isHighest,
   color,
 }) => {
-  console.log("ScatterPlot props:", {
-    data,
-    pitchType,
-    usage,
-    avgVelo,
-    avgSpin,
-  });
 
   const svgRef = useRef();
   const width = 250;

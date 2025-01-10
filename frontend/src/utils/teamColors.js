@@ -1,5 +1,4 @@
 export const getTeamColor = (teamId) => {
-  console.log('Getting color for team:', teamId);
 
   // Map full names to abbreviations
   const teamAbbreviations = {
@@ -28,7 +27,6 @@ export const getTeamColor = (teamId) => {
 
   const abbreviation = teamAbbreviations[teamId];
   const color = teamColors[abbreviation];
-  console.log('Color found:', color);
 
   return color || '#0b5394'; // Default blue if team not found
 };
