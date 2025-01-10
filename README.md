@@ -59,25 +59,30 @@ The frontend will run on http://localhost:5173
 ### Backend Setup
 
 1. Navigate to the backend directory:
+   
 cd backend
 
 2. Create and activate a virtual environment:
 
 Windows:
 python -m venv venv
+
 .\venv\Scripts\activate
 
 macOS/Linux:
 python3 -m venv venv
+
 source venv/bin/activate
 
 3. Copy the .env.example file to .env:
+   
 cp .env.example .env
 
 4. Install required Python packages:
 pip install -r requirements.txt
 
 5. Start the backend server:
+   
 uvicorn app.main:app --reload
 
 The backend API will run on http://localhost:8000
