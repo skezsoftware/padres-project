@@ -26,10 +26,12 @@ Before starting, you'll need to install:
 
 HTTPS:
 git clone https://github.com/skezsoftware/padres-project.git
+
 cd padres-project
 
 SSH:
 git clone git@github.com:skezsoftware/padres-project.git
+
 cd padres-project
 
 
